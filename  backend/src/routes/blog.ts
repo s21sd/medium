@@ -12,24 +12,28 @@ export const blogRouter = new Hono<{
         userId: string;
     }
 }>();
-
-// {
-//     "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJmNjJhNWYzLWVlYmYtNGZmZi04NGU5LTY1MDA2ZmE3YmZhYSJ9.fCwFmR4BY8coEQAKZ_4KBofde1gdIdNbLwoCRG6DoBM"
-// }
+// https://backend.sunnysrivastava258.workers.dev
 
 blogRouter.use('/*', async (c, next) => {
 
     const header = c.req.header("authorization") || "";
     const user = await verify(header, c.env.JET_SECRET);
-    if (user) {
-        // @ts-ignore
-        c.set("userId", user.id);
-        await next();
-    }
-    else {
+    try {
+        if (user) {
+            // @ts-ignore
+            c.set("userId", user.id);
+            await next();
+        }
+        else {
+            c.status(403)
+            return c.json({
+                error: "You are not  logged in "
+            })
+        }
+    } catch (error) {
         c.status(403)
         return c.json({
-            error: "unautorized"
+            message: "You are not  logged in "
         })
     }
 })
